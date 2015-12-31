@@ -288,6 +288,15 @@ setup_luafuncs(lua_State *L)
 	lua_register(L, "loop", lua_loopclip);
 	lua_register(L, "stop", lua_stopclip);
 	lua_register(L, "display", lua_displayimg);
+
+	/*
+	 * Also guarantee the special tables exist, even if the user doesn't
+	 * specify them in the script.
+	 */
+	lua_newtable(L);
+	lua_setglobal(L, "sample_map");
+	lua_newtable(L);
+	lua_setglobal(L, "image_map");
 }
 
 
