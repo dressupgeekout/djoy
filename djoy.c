@@ -174,7 +174,7 @@ globalstate_setup(struct globalstate *global)
 		return false;
 	}
 
-	global->win = SDL_CreateWindow("dojoy", SDL_WINDOWPOS_CENTERED,
+	global->win = SDL_CreateWindow(getprogname(), SDL_WINDOWPOS_CENTERED,
 		SDL_WINDOWPOS_CENTERED, 150, 150, 0);
 	global->L = luaL_newstate();
 	luaL_openlibs(global->L);
