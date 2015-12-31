@@ -303,7 +303,7 @@ handle_joybutton(const SDL_JoyButtonEvent ev)
 		lua_getglobal(global.L, "onbuttonup");
 	}
 
-	lua_newtable(global.L);
+	lua_createtable(global.L, 3, 0);
 	lua_pushinteger(global.L, ev.timestamp);
 	lua_setfield(global.L, -2, "timestamp");
 	lua_pushinteger(global.L, ev.which);
@@ -331,7 +331,7 @@ static void
 handle_joyaxis(const SDL_JoyAxisEvent ev)
 {
 	lua_getglobal(global.L, "onaxis");
-	lua_newtable(global.L);
+	lua_createtable(global.L, 4, 0);
 	lua_pushinteger(global.L, ev.timestamp);
 	lua_setfield(global.L, -2, "timestamp");
 	lua_pushinteger(global.L, ev.which);
