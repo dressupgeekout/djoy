@@ -61,6 +61,7 @@ static void cleanup(void);
 static void handle_joybutton(const SDL_JoyButtonEvent ev);
 static void handle_joyaxis(const SDL_JoyAxisEvent ev);
 static bool handle_keyboard(const SDL_KeyboardEvent ev);
+static void handle_quit(const SDL_QuitEvent ev);
 
 static int lua_playclip(lua_State *L); 
 static int lua_loopclip(lua_State *L);
@@ -327,14 +328,18 @@ static void
 event_loop(void)
 {
 	SDL_Event ev;
+	SDL_Event quitev;
 	bool done = false;
+
+	quitev.type = SDL_QUIT;
 
 	while (!done) {
 		while (SDL_PollEvent(&ev)) {
 			switch (ev.type) {
 			case SDL_KEYDOWN:
 				if (!handle_keyboard(ev.key))
-					done = true;
+					SDL_PushEvent(&quitev);
+				continue;
 				break;
 			case SDL_JOYBUTTONDOWN: /* FALLTHROUGH */
 			case SDL_JOYBUTTONUP:
@@ -342,6 +347,10 @@ event_loop(void)
 				break;
 			case SDL_JOYAXISMOTION:
 				handle_joyaxis(ev.jaxis);
+				break;
+			case SDL_QUIT:
+				handle_quit(ev.quit);
+				done = true;
 				break;
 			default:
 				continue;
@@ -437,6 +446,27 @@ handle_keyboard(const SDL_KeyboardEvent ev)
 		break;
 	}
 	return true;
+}
+
+
+/*
+ * Calls the Lua function onquit(table) where the table describing the quit
+ * event looks like this:
+ *
+ *     {
+ *       timestamp = int,
+ *     }
+ */
+static void
+handle_quit(const SDL_QuitEvent ev)
+{
+	lua_getglobal(global.L, "onquit");
+	lua_createtable(global.L, 1, 0);
+	lua_pushinteger(global.L, ev.timestamp);
+	lua_setfield(global.L, -2, "timestamp");
+
+	if (lua_pcall(global.L, 1, 0, 0) != LUA_OK)
+		warnx("%s", lua_tostring(global.L, -1));
 }
 
 /* */
