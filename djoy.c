@@ -22,8 +22,10 @@
 
 #include <SDL.h>
 #include <SDL_mixer.h>
+#include <SDL_image.h>
 
 #define MAXCHUNKS 16
+#define MAXIMAGES MAXCHUNKS
 
 /* */
 
@@ -34,6 +36,7 @@ struct globalstate {
 	lua_State *L;
 	SDL_Joystick *joy;
 	Mix_Chunk *clips[MAXCHUNKS];
+	SDL_Surface *images[MAXIMAGES];
 	bool verbose;
 };
 
@@ -44,6 +47,8 @@ static bool globalstate_setup(struct globalstate *global);
 static void globalstate_teardown(struct globalstate *global);
 static void setup_audio(lua_State *L);
 static void teardown_audio(void);
+static void setup_images(lua_State *L);
+static void teardown_images(void);
 static void setup_luafuncs(lua_State *L);
 static void add_joymapfile(struct globalstate *global);
 static bool read_script(struct globalstate *global);
@@ -55,6 +60,7 @@ static bool handle_keyboard(const SDL_KeyboardEvent ev);
 static int lua_playclip(lua_State *L); 
 static int lua_loopclip(lua_State *L);
 static int lua_stopclip(lua_State *L);
+static int lua_displayimg(lua_State *L);
 
 /* */
 
@@ -72,6 +78,7 @@ main(int argc, char *argv[])
 
 	SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO|SDL_INIT_EVENTS|SDL_INIT_JOYSTICK);
 	Mix_Init(MIX_INIT_FLAC|MIX_INIT_OGG|MIX_INIT_MP3);
+	IMG_Init(IMG_INIT_JPG|IMG_INIT_PNG|IMG_INIT_TIF);
 
 	if (!globalstate_setup(&global))
 		goto fail;
@@ -87,10 +94,13 @@ main(int argc, char *argv[])
 	}
 
 	setup_audio(global.L);
+	setup_images(global.L);
 	event_loop();
 
 	globalstate_teardown(&global);
+	teardown_images();
 	teardown_audio();
+	IMG_Quit();
 	Mix_Quit();
 	SDL_Quit();
 	return EXIT_SUCCESS;
@@ -98,6 +108,7 @@ main(int argc, char *argv[])
 fail:
 	globalstate_teardown(&global);
 	teardown_audio();
+	IMG_Quit();
 	Mix_Quit();
 	SDL_Quit();
 	return EXIT_FAILURE;
@@ -232,11 +243,47 @@ teardown_audio(void)
 
 
 static void
+setup_images(lua_State *L)
+{
+	int i;
+	char *file;
+
+	lua_getglobal(L, "image_map");
+	lua_pushnil(L);
+
+	while (lua_next(L, -2) != 0) {
+		i = lua_tointeger(L, -2);
+
+		if ((i < 0) || (i >= MAXIMAGES)) {
+			if (global.verbose)
+				warnx("refusing to load image %s\tto slot %d", file, i);
+			lua_pop(L, 1);
+			continue;
+		}
+
+		file = (char *)lua_tostring(L, -1);
+		if (global.verbose) warnx("Loading image %s\tto slot %d", file, i);
+		global.images[i] = IMG_Load(file);
+		lua_pop(L, 1);
+	}
+}
+
+
+static void
+teardown_images(void)
+{
+	int i;
+	for (i = 0; i < MAXIMAGES; i++) SDL_FreeSurface(global.images[i]);
+}
+
+
+static void
 setup_luafuncs(lua_State *L)
 {
 	lua_register(L, "play", lua_playclip);
 	lua_register(L, "loop", lua_loopclip);
 	lua_register(L, "stop", lua_stopclip);
+	lua_register(L, "display", lua_displayimg);
 }
 
 
@@ -411,5 +458,21 @@ lua_stopclip(lua_State *L)
 	i = luaL_checkinteger(L, 1);
 	lua_pop(L, 1);
 	Mix_HaltChannel(i);
+	return 0;
+}
+
+
+/*
+ * display(int)
+ */
+static int
+lua_displayimg(lua_State *L)
+{
+	int i;
+
+	i = luaL_checkinteger(L, 1);
+	lua_pop(L, 1);
+	SDL_BlitSurface(global.images[i], NULL, SDL_GetWindowSurface(global.win), NULL);
+	SDL_UpdateWindowSurface(global.win);
 	return 0;
 }
