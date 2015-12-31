@@ -184,7 +184,7 @@ globalstate_init(struct globalstate *global)
 	snprintf(global->joymap_file, 1, "%s", "");
 	global->verbose = false;
 	global->window_width = DEFAULT_WINDOW_WIDTH;
-	global->window_width = DEFAULT_WINDOW_HEIGHT;
+	global->window_height = DEFAULT_WINDOW_HEIGHT;
 }
 
 
