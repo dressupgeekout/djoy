@@ -26,6 +26,8 @@
 
 #define MAXCHUNKS 16
 #define MAXIMAGES MAXCHUNKS
+#define DEFAULT_WINDOW_WIDTH 150
+#define DEFAULT_WINDOW_HEIGHT 150
 
 /* */
 
@@ -38,6 +40,8 @@ struct globalstate {
 	Mix_Chunk *clips[MAXCHUNKS];
 	SDL_Surface *images[MAXIMAGES];
 	bool verbose;
+	size_t window_width;
+	size_t window_height;
 };
 
 static int parse_options(int *argc, char ***argv);
@@ -120,8 +124,11 @@ parse_options(int *argc, char ***argv)
 {
 	int ch;
 
-	while ((ch = getopt(*argc, *argv, "hm:v")) != -1) {
+	while ((ch = getopt(*argc, *argv, "H:hm:vW:")) != -1) {
 		switch (ch) {
+		case 'H':
+			global.window_height = atoi(optarg);
+			break;
 		case 'h':
 			usage(stdout);
 			return EXIT_SUCCESS;
@@ -131,6 +138,9 @@ parse_options(int *argc, char ***argv)
 			break;
 		case 'v':
 			global.verbose = true;
+			break;
+		case 'W':
+			global.window_width = atoi(optarg);
 			break;
 		case '?': /* FALLTHROUGH */
 		default:
@@ -154,7 +164,8 @@ parse_options(int *argc, char ***argv)
 static void
 usage(FILE *stream)
 {
-	fprintf(stream, "%s: usage: %s [-hv] [-m mapfile] script\n",
+	fprintf(stream,
+		"%s: usage: %s [-hv] [-m mapfile] [-W width] [-H height] script\n",
 		getprogname(), getprogname());
 }
 
@@ -172,6 +183,8 @@ globalstate_init(struct globalstate *global)
 	snprintf(global->script_file, 1, "%s", "");
 	snprintf(global->joymap_file, 1, "%s", "");
 	global->verbose = false;
+	global->window_width = DEFAULT_WINDOW_WIDTH;
+	global->window_width = DEFAULT_WINDOW_HEIGHT;
 }
 
 
@@ -186,7 +199,7 @@ globalstate_setup(struct globalstate *global)
 	}
 
 	global->win = SDL_CreateWindow(getprogname(), SDL_WINDOWPOS_CENTERED,
-		SDL_WINDOWPOS_CENTERED, 150, 150, 0);
+		SDL_WINDOWPOS_CENTERED, global->window_width, global->window_height, 0);
 	global->L = luaL_newstate();
 	luaL_openlibs(global->L);
 
