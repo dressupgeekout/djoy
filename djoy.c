@@ -57,6 +57,7 @@ static void setup_luafuncs(lua_State *L);
 static void add_joymapfile(struct globalstate *global);
 static bool read_script(struct globalstate *global);
 static void event_loop(void);
+static void cleanup(void);
 static void handle_joybutton(const SDL_JoyButtonEvent ev);
 static void handle_joyaxis(const SDL_JoyAxisEvent ev);
 static bool handle_keyboard(const SDL_KeyboardEvent ev);
@@ -100,21 +101,11 @@ main(int argc, char *argv[])
 	setup_audio(global.L);
 	setup_images(global.L);
 	event_loop();
-
-	globalstate_teardown(&global);
-	teardown_images();
-	teardown_audio();
-	IMG_Quit();
-	Mix_Quit();
-	SDL_Quit();
+	cleanup();
 	return EXIT_SUCCESS;
 
 fail:
-	globalstate_teardown(&global);
-	teardown_audio();
-	IMG_Quit();
-	Mix_Quit();
-	SDL_Quit();
+	cleanup();
 	return EXIT_FAILURE;
 }
 
@@ -348,6 +339,17 @@ event_loop(void)
 			}
 		}
 	}
+}
+
+static void
+cleanup(void)
+{
+	globalstate_teardown(&global);
+	teardown_images();
+	teardown_audio();
+	IMG_Quit();
+	Mix_Quit();
+	SDL_Quit();
 }
 
 
