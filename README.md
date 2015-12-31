@@ -8,13 +8,14 @@ you can play kinda silly music in your hand like a BopIt.
 ## Script reference
 
 djoy is essentially a custom Lua 5.3 interpreter with extra capabilities to
-play sounds.
+play sounds and display images.
 
 Here is the degenerate script, which outlines what all scripts must have at
 a minimum:
 
     -- Degenerate script
-    sample_map = { }
+    sample_map = {}
+    image_map = {}
 
     function onbuttondown(ev)
     end
@@ -36,6 +37,9 @@ WAV, FLAC, MP3 and/or Ogg Vorbis files like this:
 And then you can play(), loop() and/or stop() these samples by passing in
 the number you gave them. For example, play(0) will play blah.wav once, and
 stop(1) will stop foo.flac (useful if you had loop()ed it to begin with).
+
+If you like, you can similarly fill in the `image_map` with paths to raster
+graphics. Then you call the display() function on them.
 
 The event structure "ev" that is passed into the event handlers describe
 actions of the joysticks.
@@ -60,7 +64,10 @@ The table for onaxis() looks like this:
 This enables you to precisely specify what gets played when, for example:
 
     function onbuttondown(ev)
-      if ev.button == 7 then play(1) end
+      if ev.button == 7 then
+        play(1)
+        display(5)
+      end
     end
 
 
