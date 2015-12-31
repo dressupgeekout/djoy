@@ -239,7 +239,7 @@ add_joymapfile(struct globalstate *global)
 	int n;
 	n = SDL_GameControllerAddMappingsFromFile(global->joymap_file);
 
-	if (n > 0)
+	if (n >= 0)
 		warnx("added %d gamepad mapping(s) from %s", n, global->joymap_file);
 	else
 		warnx("could not read mapping file %s", global->joymap_file);
