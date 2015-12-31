@@ -523,10 +523,17 @@ static int
 lua_displayimg(lua_State *L)
 {
 	int i;
+	static SDL_Rect maxrect;
+
+	maxrect.x = 0;
+	maxrect.y = 0;
+	maxrect.w = global.window_width;
+	maxrect.h = global.window_height;
 
 	i = luaL_checkinteger(L, 1);
 	lua_pop(L, 1);
-	SDL_BlitSurface(global.images[i], NULL, SDL_GetWindowSurface(global.win), NULL);
+	SDL_BlitSurface(global.images[i], &maxrect,
+		SDL_GetWindowSurface(global.win), &maxrect);
 	SDL_UpdateWindowSurface(global.win);
 	return 0;
 }
