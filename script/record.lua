@@ -44,3 +44,7 @@ end
 function onaxis(ev)
   --f:write(string.format("%d\tAXIS\t%d\t%d\n", ev.timestamp, ev.axis, ev.value))
 end
+
+function onquit(ev)
+  f:close()
+end
