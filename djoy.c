@@ -207,8 +207,9 @@ setup_audio(lua_State *L)
 	while (lua_next(L, -2) != 0) {
 		i = lua_tointeger(L, -2);
 
-		if (global.verbose && ((i < 0) || (i >= MAXCHUNKS))) {
-			warnx("refusing to load sample %s\tto slot %d", file, i);
+		if ((i < 0) || (i >= MAXCHUNKS)) {
+			if (global.verbose)
+				warnx("refusing to load sample %s\tto slot %d", file, i);
 			lua_pop(L, 1);
 			continue;
 		}
