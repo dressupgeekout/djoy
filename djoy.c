@@ -331,7 +331,8 @@ event_loop(void)
 	while (!done) {
 		while (SDL_PollEvent(&ev)) {
 			switch (ev.type) {
-			case SDL_KEYDOWN:
+			case SDL_KEYDOWN: /* FALLTHROUGH */
+			case SDL_KEYUP:
 				if (!handle_keyboard(ev.key))
 					SDL_PushEvent(&quitev);
 				continue;
