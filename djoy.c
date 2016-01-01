@@ -68,6 +68,7 @@ static int lua_playclip(lua_State *L);
 static int lua_loopclip(lua_State *L);
 static int lua_stopclip(lua_State *L);
 static int lua_displayimg(lua_State *L);
+static int lua_proto_noop(lua_State *L);
 
 /* */
 
@@ -290,6 +291,17 @@ setup_luafuncs(lua_State *L)
 	lua_register(L, "loop", lua_loopclip);
 	lua_register(L, "stop", lua_stopclip);
 	lua_register(L, "display", lua_displayimg);
+
+	/*
+	 * Just define all event handlers that may or may not be redefined in the
+	 * user script.
+	 */
+	lua_register(L, "onaxis", lua_proto_noop);
+	lua_register(L, "onbuttondown", lua_proto_noop);
+	lua_register(L, "onbuttonup", lua_proto_noop);
+	lua_register(L, "onkeydown", lua_proto_noop);
+	lua_register(L, "onkeyup", lua_proto_noop);
+	lua_register(L, "onquit", lua_proto_noop);
 
 	/*
 	 * Also guarantee the special tables exist, even if the user doesn't
@@ -552,5 +564,16 @@ lua_displayimg(lua_State *L)
 	SDL_BlitSurface(global.images[i], &(global.maxrect),
 		SDL_GetWindowSurface(global.win), &(global.maxrect));
 	SDL_UpdateWindowSurface(global.win);
+	return 0;
+}
+
+
+/*
+ * A purposeful noop solely to avoid "trying to call nil" messages from the
+ * interpreter.
+ */
+static int
+lua_proto_noop(lua_State *L)
+{
 	return 0;
 }
