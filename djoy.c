@@ -429,16 +429,37 @@ handle_joyaxis(const SDL_JoyAxisEvent ev)
 
 
 /*
- * Returning 'false' means it's time to quit the event loop.
+ * Returning 'false' means it's time to quit the event loop. The ESCAPE key
+ * is reserved to quit program and is not available for use in scripts.
+ *
+ * Otherwise, this calls the Lua function onkeydown(table) or onkeyup(table)
+ * where the table which describes the keyboard event looks like this:
+ *
+ *     {
+ *       timestamp = int,
+ *       key = str,
+ *     }
  */
 static bool
 handle_keyboard(const SDL_KeyboardEvent ev)
 {
+	if (ev.type == SDL_KEYDOWN)
+		lua_getglobal(global.L, "onkeydown");
+	else
+		lua_getglobal(global.L, "onkeyup");
+
 	switch (ev.keysym.sym) {
-	case SDLK_ESCAPE: /* FALLTHROUGH */
-	case SDLK_q:
+	case SDLK_ESCAPE:
 		return false;
 		break;
+	default:
+		lua_createtable(global.L, 2, 0);
+		lua_pushinteger(global.L, ev.timestamp);
+		lua_setfield(global.L, -2, "timestamp");
+		lua_pushstring(global.L, SDL_GetKeyName(ev.keysym.sym));
+		lua_setfield(global.L, -2, "key");
+		if (lua_pcall(global.L, 1, 0, 0) != LUA_OK)
+			warnx("%s", lua_tostring(global.L, -1));
 	}
 	return true;
 }
