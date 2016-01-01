@@ -39,6 +39,7 @@ struct globalstate {
 	SDL_Joystick *joy;
 	Mix_Chunk *clips[MAXCHUNKS];
 	SDL_Surface *images[MAXIMAGES];
+	SDL_Rect maxrect;
 	bool verbose;
 	size_t window_width;
 	size_t window_height;
@@ -191,6 +192,11 @@ globalstate_setup(struct globalstate *global)
 		SDL_WINDOWPOS_CENTERED, global->window_width, global->window_height, 0);
 	global->L = luaL_newstate();
 	luaL_openlibs(global->L);
+
+	global->maxrect.x = 0;
+	global->maxrect.y = 0;
+	global->maxrect.w = global->window_width;
+	global->maxrect.h = global->window_height;
 }
 
 
@@ -540,17 +546,11 @@ static int
 lua_displayimg(lua_State *L)
 {
 	int i;
-	static SDL_Rect maxrect;
-
-	maxrect.x = 0;
-	maxrect.y = 0;
-	maxrect.w = global.window_width;
-	maxrect.h = global.window_height;
 
 	i = luaL_checkinteger(L, 1);
 	lua_pop(L, 1);
-	SDL_BlitSurface(global.images[i], &maxrect,
-		SDL_GetWindowSurface(global.win), &maxrect);
+	SDL_BlitSurface(global.images[i], &(global.maxrect),
+		SDL_GetWindowSurface(global.win), &(global.maxrect));
 	SDL_UpdateWindowSurface(global.win);
 	return 0;
 }
