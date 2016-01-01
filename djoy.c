@@ -47,7 +47,7 @@ struct globalstate {
 static int parse_options(int *argc, char ***argv);
 static void usage(FILE *stream);
 static void globalstate_init(struct globalstate *global);
-static bool globalstate_setup(struct globalstate *global);
+static void globalstate_setup(struct globalstate *global);
 static void globalstate_teardown(struct globalstate *global);
 static void setup_audio(lua_State *L);
 static void teardown_audio(void);
@@ -86,8 +86,7 @@ main(int argc, char *argv[])
 	Mix_Init(MIX_INIT_FLAC|MIX_INIT_OGG|MIX_INIT_MP3);
 	IMG_Init(IMG_INIT_JPG|IMG_INIT_PNG|IMG_INIT_TIF);
 
-	if (!globalstate_setup(&global))
-		goto fail;
+	globalstate_setup(&global);
 
 	if (strncmp(global.joymap_file, "", 1))
 		add_joymapfile(&global);
@@ -180,22 +179,18 @@ globalstate_init(struct globalstate *global)
 }
 
 
-static bool
+static void
 globalstate_setup(struct globalstate *global)
 {
-	if (SDL_NumJoysticks() >= 1) {
+	if (SDL_NumJoysticks() >= 1)
 		global->joy = SDL_JoystickOpen(0);
-	} else {
+	else
 		warnx("%s", "can't find any joysticks!");
-		return false;
-	}
 
 	global->win = SDL_CreateWindow(getprogname(), SDL_WINDOWPOS_CENTERED,
 		SDL_WINDOWPOS_CENTERED, global->window_width, global->window_height, 0);
 	global->L = luaL_newstate();
 	luaL_openlibs(global->L);
-
-	return true;
 }
 
 
