@@ -2,7 +2,7 @@
  * vim: noet
  *
  * djoy.c
- * Charlotte d'Arcangelo <dressupgeekout@gmail.com>
+ * Charlotte Koch <dressupgeekout@gmail.com>
  *
  * NOTES
  *  - will only use the first available joystick.

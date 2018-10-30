@@ -1,5 +1,5 @@
 # djoy Makefile
-# Charlotte d'Arcangelo <dressupgeekout@gmail.com>
+# Charlotte Koch <dressupgeekout@gmail.com>
 .PHONY: all clean
 .SUFFIXES: .c .o
 
